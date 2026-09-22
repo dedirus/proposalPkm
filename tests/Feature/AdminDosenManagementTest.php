@@ -71,6 +71,7 @@ class AdminDosenManagementTest extends TestCase
         $response->assertSee('Registrasi Dosen Pembimbing Baru');
         $response->assertSee('NIP / NIDN Dosen');
         $response->assertSee('Bidang Kepakaran / Keahlian');
+        $response->assertSee('Jenis Skema PKM Bimbingan');
         $response->assertSee('Daftarkan Dosen Pembimbing');
     }
 
@@ -84,6 +85,7 @@ class AdminDosenManagementTest extends TestCase
             'nip_nim'               => '197903032008011003',
             'email'                 => 'agus.supriyanto@univ.ac.id',
             'kepakaran'             => 'Renewable Energy & Smart Grid',
+            'skema_pkm'             => 'PKM-RE',
             'password'              => 'secret123',
             'password_confirmation' => 'secret123',
         ];
@@ -98,6 +100,7 @@ class AdminDosenManagementTest extends TestCase
             'nip_nim'   => '197903032008011003',
             'email'     => 'agus.supriyanto@univ.ac.id',
             'kepakaran' => 'Renewable Energy & Smart Grid',
+            'skema_pkm' => 'PKM-RE',
             'role'      => 'dosen',
         ]);
     }
@@ -112,6 +115,7 @@ class AdminDosenManagementTest extends TestCase
             'nip_nim'               => '198501012010121001', // sudah milik Hendra
             'email'                 => 'hendra@test.com', // sudah milik Hendra
             'kepakaran'             => 'Testing',
+            'skema_pkm'             => 'All',
             'password'              => 'secret123',
             'password_confirmation' => 'secret123',
         ];
@@ -131,6 +135,7 @@ class AdminDosenManagementTest extends TestCase
             'nip_nim'               => '198808082014022001',
             'email'                 => 'ratna.dewi@univ.ac.id',
             'kepakaran'             => 'Sistem Informasi & E-Commerce',
+            'skema_pkm'             => 'All',
             'password'              => 'dosenpassword',
             'password_confirmation' => 'dosenpassword',
         ]);
@@ -151,7 +156,7 @@ class AdminDosenManagementTest extends TestCase
     }
 
     /**
-     * Admin dapat mengedit data dosen dan bidang kepakaran
+     * Admin dapat mengedit data dosen, bidang kepakaran, dan skema pkm
      */
     public function test_admin_can_update_dosen()
     {
@@ -160,6 +165,7 @@ class AdminDosenManagementTest extends TestCase
             'nip_nim'               => '198501012010121001',
             'email'                 => 'hendra.wijaya@univ.ac.id',
             'kepakaran'             => 'Deep Learning, Robotics & IoT',
+            'skema_pkm'             => 'PKM-KC',
             'password'              => 'newpass123',
             'password_confirmation' => 'newpass123',
         ]);
@@ -171,6 +177,7 @@ class AdminDosenManagementTest extends TestCase
         $this->assertEquals('Dr. Ir. Hendra Wijaya, M.Kom., IPM.', $this->dosen->name);
         $this->assertEquals('hendra.wijaya@univ.ac.id', $this->dosen->email);
         $this->assertEquals('Deep Learning, Robotics & IoT', $this->dosen->kepakaran);
+        $this->assertEquals('PKM-KC', $this->dosen->skema_pkm);
         $this->assertTrue(Hash::check('newpass123', $this->dosen->password));
     }
 
@@ -228,5 +235,114 @@ class AdminDosenManagementTest extends TestCase
         // Dosen ditolak
         $resDosen = $this->actingAs($this->dosen)->get(route('admin.dosen.create'));
         $resDosen->assertStatus(403);
+    }
+
+    /**
+     * Dosen dengan skema 'All' dapat melihat proposal dari berbagai skema
+     */
+    public function test_dosen_with_all_skema_can_view_all_available_proposals()
+    {
+        $this->dosen->update(['skema_pkm' => 'All']);
+
+        Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Proposal Skema RE',
+            'skema_pkm' => 'PKM-RE (Riset Eksakta)',
+            'file_path' => 'proposals/re.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Proposal Skema Kewirausahaan',
+            'skema_pkm' => 'PKM-K (Kewirausahaan)',
+            'file_path' => 'proposals/k.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        $response = $this->actingAs($this->dosen)->get(route('dosen.proposals.available'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Proposal Skema RE');
+        $response->assertSee('Proposal Skema Kewirausahaan');
+    }
+
+    /**
+     * Dosen dengan skema spesifik (misal PKM-K) hanya dapat melihat proposal skema PKM-K
+     */
+    public function test_dosen_with_specific_skema_only_sees_matching_proposals()
+    {
+        $this->dosen->update(['skema_pkm' => 'PKM-K']);
+
+        Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Proposal Skema Karsa Cipta',
+            'skema_pkm' => 'PKM-KC (Karsa Cipta)',
+            'file_path' => 'proposals/kc.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Proposal Skema Bisnis Kopi',
+            'skema_pkm' => 'PKM-K (Kewirausahaan)',
+            'file_path' => 'proposals/kopi.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        $response = $this->actingAs($this->dosen)->get(route('dosen.proposals.available'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Proposal Skema Bisnis Kopi');
+        $response->assertDontSee('Proposal Skema Karsa Cipta');
+    }
+
+    /**
+     * Dosen dicegah saat mencoba mengklaim proposal di luar skema yang ditugaskan
+     */
+    public function test_dosen_cannot_claim_proposal_outside_their_skema()
+    {
+        $this->dosen->update(['skema_pkm' => 'PKM-K']);
+
+        $proposalLuarSkema = Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Robot Pemadam Api Cerdas',
+            'skema_pkm' => 'PKM-KC',
+            'file_path' => 'proposals/robot.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        $response = $this->actingAs($this->dosen)->post(route('dosen.proposals.claim', $proposalLuarSkema->id));
+
+        $response->assertRedirect(route('dosen.proposals.available'));
+        $response->assertSessionHas('error');
+
+        $proposalLuarSkema->refresh();
+        $this->assertNull($proposalLuarSkema->dosen_id);
+    }
+
+    /**
+     * Dosen berhasil mengklaim proposal yang sesuai skemanya
+     */
+    public function test_dosen_can_claim_proposal_matching_their_skema()
+    {
+        $this->dosen->update(['skema_pkm' => 'PKM-K']);
+
+        $proposalCocok = Proposal::create([
+            'ketua_id'  => $this->mahasiswa->id,
+            'judul_pkm' => 'Usaha Camilan Sehat Jamur Crispy',
+            'skema_pkm' => 'PKM-K (Kewirausahaan)',
+            'file_path' => 'proposals/jamur.pdf',
+            'status'    => 'diajukan',
+        ]);
+
+        $response = $this->actingAs($this->dosen)->post(route('dosen.proposals.claim', $proposalCocok->id));
+
+        $response->assertRedirect(route('dosen.bimbingan.show', $proposalCocok->id));
+        $response->assertSessionHas('success');
+
+        $proposalCocok->refresh();
+        $this->assertEquals($this->dosen->id, $proposalCocok->dosen_id);
+        $this->assertEquals('sedang_dibimbing', $proposalCocok->status);
     }
 }

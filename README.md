@@ -53,7 +53,7 @@ Aplikasi web modern berbasis **Laravel 11**, **PHP 8.4**, **Bootstrap 5**, dan *
   * Rekapitulasi seluruh riwayat review dosen pembimbing dan status penyelesaiannya.
 * **Menu Pengaturan (Setting)**:
   * **Add Mahasiswa & Data Mahasiswa**: Mendaftarkan mahasiswa yang berhak memiliki akses masuk (*login*) ke sistem, edit data, dan reset password.
-  * **Add Dosen & Data Dosen Pembimbing**: Mendaftarkan dosen pembimbing lengkap dengan bidang kepakaran/keahlian, edit data, dan reset password.
+  * **Add Dosen & Data Dosen Pembimbing**: Mendaftarkan dosen pembimbing lengkap dengan bidang kepakaran/keahlian serta **Penetapan Jenis Skema PKM Bimbingan** (opsi `All` untuk melihat semua usulan, atau skema spesifik seperti `PKM-K`, `PKM-KC`, dll. untuk pembatasan telaah & klaim usulan).
   * **Proteksi Integritas Data**: Mahasiswa dan dosen yang memiliki keterkaitan usulan proposal aktif diproteksi dari penghapusan secara otomatis.
 
 ---
@@ -77,7 +77,7 @@ Tersedia tombol demo instan di halaman login (`/login`) untuk mempermudah evalua
 * **Frontend UI**: Blade Templating + Bootstrap 5.3 + Bootstrap Icons
 * **PDF Handling**: Native Embedded HTML5 Object/Iframe PDF Viewer
 * **AJAX**: Fetch API & XMLHttpRequest dengan proteksi CSRF token
-* **Pengujian Otomatis**: PHPUnit / Laravel Feature Test Suite (37 Tests, 136 Assertions, 100% Passed)
+* **Pengujian Otomatis**: PHPUnit / Laravel Feature Test Suite (41 Tests, 153 Assertions, 100% Passed)
 
 ---
 
@@ -176,12 +176,12 @@ php artisan test
 
 Hasil pengujian:
 ```text
-PASS  Tests\Feature\AdminDosenManagementTest (9 tests, 37 assertions)
+PASS  Tests\Feature\AdminDosenManagementTest (13 tests, 54 assertions)
 PASS  Tests\Feature\AdminMahasiswaManagementTest (9 tests, 34 assertions)
 PASS  Tests\Feature\ProposalPkmWorkflowTest (18 tests, 64 assertions)
 PASS  Tests\Feature\ExampleTest (1 test, 1 assertion)
 
-Tests:    37 passed (136 assertions)
+Tests:    41 passed (153 assertions)
 Duration: ~3.0s
 ```
 

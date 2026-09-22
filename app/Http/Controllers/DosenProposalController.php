@@ -14,14 +14,27 @@ class DosenProposalController extends Controller
 {
     /**
      * Menampilkan daftar semua proposal mahasiswa yang belum memiliki pembimbing (dosen_id IS NULL)
+     * Dibatasi sesuai jenis skema PKM dosen pembimbing (atau semua skema jika 'All')
      */
     public function listAvailableProposals()
     {
-        $availableProposals = Proposal::with(['ketua', 'members'])
+        $dosen = Auth::user();
+        $query = Proposal::with(['ketua', 'members'])
             ->whereNull('dosen_id')
-            ->where('status', 'diajukan')
-            ->latest()
-            ->paginate(10);
+            ->where('status', 'diajukan');
+
+        // Jika jenis skema bimbingan dosen bukan 'All', hanya tampilkan proposal yang sesuai skemanya
+        if ($dosen->skema_pkm && strtolower($dosen->skema_pkm) !== 'all') {
+            $skemaCode = explode(' ', trim($dosen->skema_pkm))[0];
+            $query->where(function ($q) use ($dosen, $skemaCode) {
+                $q->where('skema_pkm', $skemaCode)
+                  ->orWhere('skema_pkm', 'LIKE', "{$skemaCode} (%")
+                  ->orWhere('skema_pkm', 'LIKE', "{$skemaCode} %")
+                  ->orWhere('skema_pkm', $dosen->skema_pkm);
+            });
+        }
+
+        $availableProposals = $query->latest()->paginate(10);
 
         return view('dosen.available_proposals', compact('availableProposals'));
     }
@@ -49,10 +62,15 @@ class DosenProposalController extends Controller
         try {
             DB::transaction(function () use ($proposalId) {
                 // lockForUpdate() mengunci baris (row-level lock) proposal di database
-                // Query pembacaan/penguncian lain untuk baris ini akan ditahan (blocked) hingga transaksi selesai
                 $proposal = Proposal::where('id', $proposalId)
                     ->lockForUpdate()
                     ->firstOrFail();
+
+                // Validasi wewenang skema PKM dosen pembimbing
+                $dosen = Auth::user();
+                if (!$dosen->canReviewSkema($proposal->skema_pkm)) {
+                    throw new \DomainException("Anda tidak berhak mengklaim proposal ini karena Anda hanya ditugaskan untuk membimbing skema {$dosen->skema_pkm}.");
+                }
 
                 // Pengecekan krusial: Jika dosen_id ternyata sudah terisi oleh transaksi dosen lain yang mendahului
                 if ($proposal->dosen_id !== null) {
@@ -61,7 +79,7 @@ class DosenProposalController extends Controller
 
                 // Update data pembimbing dan status proposal
                 $proposal->update([
-                    'dosen_id' => Auth::id(),
+                    'dosen_id' => $dosen->id,
                     'status'   => 'sedang_dibimbing',
                 ]);
             });

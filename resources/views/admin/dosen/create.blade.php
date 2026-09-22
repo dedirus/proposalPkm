@@ -104,6 +104,29 @@
                             <div class="form-text small">Bidang kepakaran membantu mahasiswa dan sistem dalam penyesuaian topik PKM yang dibimbing.</div>
                         </div>
 
+                        <!-- Jenis Skema PKM Bimbingan -->
+                        <div class="mb-3">
+                            <label for="skema_pkm" class="form-label small fw-semibold text-dark">
+                                Jenis Skema PKM Bimbingan <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-tags-fill"></i></span>
+                                <select name="skema_pkm" id="skema_pkm" class="form-select @error('skema_pkm') is-invalid @enderror" required>
+                                    @foreach($skemaOptions as $val => $label)
+                                        <option value="{{ $val }}" {{ old('skema_pkm', 'All') == $val ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('skema_pkm')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-text small">
+                                <strong>Ketentuan:</strong> Jika dipilih <code>All</code>, dosen dapat melihat dan mengklaim seluruh usulan proposal mahasiswa dari semua skema PKM. Jika memilih skema tertentu, dosen hanya dapat melihat dan membimbing usulan yang sesuai dengan skema tersebut.
+                            </div>
+                        </div>
+
                         <hr class="my-4">
 
                         <!-- Password -->

@@ -96,12 +96,23 @@
                                 </td>
                                 <td>
                                     @if($d->kepakaran)
-                                        <span class="badge bg-info-subtle text-info border border-info" style="font-size: 0.75rem;">
-                                            <i class="bi bi-mortarboard me-1"></i>{{ $d->kepakaran }}
-                                        </span>
+                                        <div class="small fw-semibold text-dark">
+                                            <i class="bi bi-mortarboard text-primary me-1"></i>{{ $d->kepakaran }}
+                                        </div>
                                     @else
-                                        <span class="text-muted small fst-italic">Belum diisi</span>
+                                        <div class="text-muted small fst-italic">Kepakaran belum diisi</div>
                                     @endif
+                                    <div class="mt-1">
+                                        @if(empty($d->skema_pkm) || strtolower($d->skema_pkm) === 'all')
+                                            <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.72rem;">
+                                                <i class="bi bi-check2-all me-1"></i>Semua Skema (All)
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning" style="font-size: 0.72rem;">
+                                                <i class="bi bi-tag-fill me-1"></i>{{ $d->skema_pkm }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td>
                                     @if($d->proposals_bimbingan_count > 0)

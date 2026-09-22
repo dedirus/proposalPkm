@@ -18,6 +18,7 @@ class User extends Authenticatable
         'role',
         'nip_nim',
         'kepakaran',
+        'skema_pkm',
     ];
 
     protected $hidden = [
@@ -73,5 +74,28 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Memeriksa apakah dosen memiliki wewenang untuk mereview skema tertentu
+     */
+    public function canReviewSkema(?string $skema): bool
+    {
+        if (!$this->isDosen()) {
+            return false;
+        }
+
+        if (empty($this->skema_pkm) || strtolower($this->skema_pkm) === 'all') {
+            return true;
+        }
+
+        if (empty($skema)) {
+            return false;
+        }
+
+        $dosenCode = strtoupper(explode(' ', trim($this->skema_pkm))[0]);
+        $skemaCode = strtoupper(explode(' ', trim($skema))[0]);
+
+        return $dosenCode === $skemaCode || strtoupper(trim($this->skema_pkm)) === strtoupper(trim($skema));
     }
 }

@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Akun Dosen Pembimbing 1
+        // 2. Akun Dosen Pembimbing 1 (Semua Skema)
         $dosen1 = User::firstOrCreate(
             ['email' => 'dosen1@example.com'],
             [
@@ -35,11 +35,12 @@ class DatabaseSeeder extends Seeder
                 'role'      => 'dosen',
                 'nip_nim'   => '198501012010121001',
                 'kepakaran' => 'Artificial Intelligence & IoT',
+                'skema_pkm' => 'All',
                 'password'  => Hash::make('password'),
             ]
         );
 
-        // 3. Akun Dosen Pembimbing 2
+        // 3. Akun Dosen Pembimbing 2 (Khusus Skema PKM-K)
         $dosen2 = User::firstOrCreate(
             ['email' => 'dosen2@example.com'],
             [
@@ -47,6 +48,7 @@ class DatabaseSeeder extends Seeder
                 'role'      => 'dosen',
                 'nip_nim'   => '198702022012122002',
                 'kepakaran' => 'Kewirausahaan & Bisnis Digital',
+                'skema_pkm' => 'PKM-K',
                 'password'  => Hash::make('password'),
             ]
         );

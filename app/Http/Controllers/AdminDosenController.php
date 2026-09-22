@@ -10,20 +10,38 @@ use Illuminate\Validation\Rule;
 class AdminDosenController extends Controller
 {
     /**
+     * Daftar pilihan jenis skema PKM untuk dosen pembimbing
+     */
+    public static array $skemaList = [
+        'All'     => 'All (Semua Skema PKM)',
+        'PKM-RE'  => 'PKM-RE (Riset Eksakta)',
+        'PKM-RSH' => 'PKM-RSH (Riset Sosial Humaniora)',
+        'PKM-K'   => 'PKM-K (Kewirausahaan)',
+        'PKM-PM'  => 'PKM-PM (Pengabdian Masyarakat)',
+        'PKM-PI'  => 'PKM-PI (Penerapan Iptek)',
+        'PKM-KC'  => 'PKM-KC (Karsa Cipta)',
+        'PKM-KI'  => 'PKM-KI (Karya Inovatif)',
+        'PKM-VGK' => 'PKM-VGK (Video Gagasan Konstruktif)',
+        'PKM-GFT' => 'PKM-GFT (Gagasan Futuristik Tertulis)',
+        'PKM-AI'  => 'PKM-AI (Artikel Ilmiah)',
+    ];
+
+    /**
      * Menampilkan daftar dosen pembimbing yang terdaftar di sistem
      */
     public function index(Request $request)
     {
         $query = User::where('role', 'dosen')->withCount('proposalsBimbingan');
 
-        // Pencarian Berdasarkan Nama, NIP, Email, atau Bidang Kepakaran
+        // Pencarian Berdasarkan Nama, NIP, Email, Bidang Kepakaran, atau Skema PKM
         if ($request->filled('q')) {
             $search = trim($request->q);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                   ->orWhere('nip_nim', 'LIKE', "%{$search}%")
                   ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('kepakaran', 'LIKE', "%{$search}%");
+                  ->orWhere('kepakaran', 'LIKE', "%{$search}%")
+                  ->orWhere('skema_pkm', 'LIKE', "%{$search}%");
             });
         }
 
@@ -38,7 +56,8 @@ class AdminDosenController extends Controller
      */
     public function create()
     {
-        return view('admin.dosen.create');
+        $skemaOptions = self::$skemaList;
+        return view('admin.dosen.create', compact('skemaOptions'));
     }
 
     /**
@@ -51,6 +70,7 @@ class AdminDosenController extends Controller
             'nip_nim'   => ['required', 'string', 'max:50', 'unique:users,nip_nim'],
             'email'     => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'kepakaran' => ['nullable', 'string', 'max:255'],
+            'skema_pkm' => ['required', 'string', 'max:100'],
             'password'  => ['required', 'string', 'min:6', 'confirmed'],
         ], [
             'name.required'      => 'Nama lengkap beserta gelar dosen wajib diisi.',
@@ -59,6 +79,7 @@ class AdminDosenController extends Controller
             'email.required'     => 'Alamat email dosen wajib diisi.',
             'email.email'        => 'Format email tidak valid.',
             'email.unique'       => 'Alamat email tersebut sudah digunakan oleh akun lain.',
+            'skema_pkm.required' => 'Jenis skema PKM bimbingan wajib dipilih.',
             'password.required'  => 'Password wajib ditentukan.',
             'password.min'       => 'Password minimal terdiri dari 6 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
@@ -69,6 +90,7 @@ class AdminDosenController extends Controller
             'nip_nim'   => $validated['nip_nim'],
             'email'     => $validated['email'],
             'kepakaran' => $validated['kepakaran'] ?? null,
+            'skema_pkm' => $validated['skema_pkm'] ?? 'All',
             'password'  => Hash::make($validated['password']),
             'role'      => 'dosen',
         ]);
@@ -86,7 +108,8 @@ class AdminDosenController extends Controller
             abort(404, 'Pengguna bukan dosen.');
         }
 
-        return view('admin.dosen.edit', compact('user'));
+        $skemaOptions = self::$skemaList;
+        return view('admin.dosen.edit', compact('user', 'skemaOptions'));
     }
 
     /**
@@ -103,6 +126,7 @@ class AdminDosenController extends Controller
             'nip_nim'   => ['required', 'string', 'max:50', Rule::unique('users', 'nip_nim')->ignore($user->id)],
             'email'     => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'kepakaran' => ['nullable', 'string', 'max:255'],
+            'skema_pkm' => ['required', 'string', 'max:100'],
             'password'  => ['nullable', 'string', 'min:6', 'confirmed'],
         ], [
             'name.required'      => 'Nama lengkap beserta gelar dosen wajib diisi.',
@@ -111,6 +135,7 @@ class AdminDosenController extends Controller
             'email.required'     => 'Alamat email dosen wajib diisi.',
             'email.email'        => 'Format email tidak valid.',
             'email.unique'       => 'Alamat email tersebut sudah digunakan oleh akun lain.',
+            'skema_pkm.required' => 'Jenis skema PKM bimbingan wajib dipilih.',
             'password.min'       => 'Password baru minimal terdiri dari 6 karakter.',
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
@@ -119,6 +144,7 @@ class AdminDosenController extends Controller
         $user->nip_nim = $validated['nip_nim'];
         $user->email = $validated['email'];
         $user->kepakaran = $validated['kepakaran'] ?? null;
+        $user->skema_pkm = $validated['skema_pkm'] ?? 'All';
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);

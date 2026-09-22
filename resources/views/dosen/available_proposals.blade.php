@@ -7,8 +7,14 @@
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
             <h3 class="fw-bold mb-1">Proposal Mahasiswa Tersedia (Mencari Pembimbing)</h3>
-            <p class="text-muted mb-0">Pilih dan klaim usulan PKM mahasiswa yang sesuai dengan bidang kepakaran Anda: 
-                <span class="badge bg-primary fs-6">{{ auth()->user()->kepakaran ?? 'Umum' }}</span>
+            <p class="text-muted mb-0">
+                Pilih dan klaim usulan PKM mahasiswa untuk Anda bimbing.
+                <span class="badge bg-primary ms-1"><i class="bi bi-mortarboard me-1"></i>Kepakaran: {{ auth()->user()->kepakaran ?? 'Umum' }}</span>
+                @if(auth()->user()->skema_pkm && strtolower(auth()->user()->skema_pkm) !== 'all')
+                    <span class="badge bg-warning text-dark border border-warning ms-1"><i class="bi bi-tag-fill me-1"></i>Skema Ditugaskan: {{ auth()->user()->skema_pkm }}</span>
+                @else
+                    <span class="badge bg-success ms-1"><i class="bi bi-check2-all me-1"></i>Skema: Semua Skema (All)</span>
+                @endif
             </p>
         </div>
         <a href="{{ route('dosen.bimbingan.index') }}" class="btn btn-outline-primary">
