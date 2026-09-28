@@ -2,6 +2,109 @@
 
 @section('title', 'Admin Monitoring Proposal PKM - SIM PKM')
 
+@push('styles')
+<style>
+    /* Styling Tab Menu Modal Detail */
+    .modal-tab-container {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 5px;
+    }
+
+    .modal-tab-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        gap: 6px;
+        margin-bottom: 0 !important;
+        border-bottom: none !important;
+        list-style: none !important;
+        padding-left: 0 !important;
+    }
+
+    .modal-tab-nav .nav-item {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .modal-tab-nav .nav-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 8px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #334155;
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: all 0.2s ease-in-out;
+        white-space: nowrap;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .modal-tab-nav .nav-link:hover {
+        background-color: #f8fafc;
+        color: #0d6efd;
+        border-color: #93c5fd;
+    }
+
+    .modal-tab-nav .nav-link.active {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+        color: #ffffff !important;
+        border-color: #0b5ed7 !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.28) !important;
+    }
+
+    .modal-tab-nav .nav-link .tab-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .modal-tab-nav .nav-link .tab-badge {
+        font-size: 0.72rem;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        font-weight: 600;
+        background-color: #e2e8f0;
+        color: #475569;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .modal-tab-nav .nav-link.active .tab-badge {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+    }
+
+    .modal-tab-nav .nav-link.active i {
+        color: #ffffff !important;
+    }
+
+    @media (max-width: 575.98px) {
+        .modal-tab-nav .nav-link {
+            padding: 7px 4px;
+            font-size: 0.75rem;
+            gap: 4px;
+        }
+        .modal-tab-nav .nav-link .tab-badge {
+            font-size: 0.68rem;
+            padding: 2px 5px;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="row mb-4">
     <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -304,27 +407,32 @@
                         </div>
                     </div>
 
-                    <!-- Nav Tabs Menu Detail Proposal -->
-                    <ul class="nav nav-tabs mb-3" id="modalTab-{{ $p->id }}" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active fw-semibold small" id="tab-tim-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-tim-{{ $p->id }}" type="button" role="tab" aria-controls="pane-tim-{{ $p->id }}" aria-selected="true">
-                                <i class="bi bi-people-fill text-primary me-1"></i> Susunan Tim & Jobdesk
-                                <span class="badge bg-secondary-subtle text-secondary border ms-1">{{ $p->members->count() + 1 }}</span>
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link fw-semibold small" id="tab-doc-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-doc-{{ $p->id }}" type="button" role="tab" aria-controls="pane-doc-{{ $p->id }}" aria-selected="false">
-                                <i class="bi bi-layers-fill text-primary me-1"></i> Riwayat Versi Dokumen
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">v{{ $p->documents->count() }}</span>
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link fw-semibold small" id="tab-review-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-review-{{ $p->id }}" type="button" role="tab" aria-controls="pane-review-{{ $p->id }}" aria-selected="false">
-                                <i class="bi bi-chat-left-dots-fill text-primary me-1"></i> Catatan Evaluasi Pembimbing
-                                <span class="badge bg-info-subtle text-info border border-info-subtle ms-1">{{ $p->reviews->count() }}</span>
-                            </button>
-                        </li>
-                    </ul>
+                    <!-- Nav Tabs Menu Detail Proposal (Sejajar horizontal tanpa turun ke bawah) -->
+                    <div class="modal-tab-container mb-3">
+                        <ul class="nav modal-tab-nav" id="modalTab-{{ $p->id }}" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-tim-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-tim-{{ $p->id }}" type="button" role="tab" aria-controls="pane-tim-{{ $p->id }}" aria-selected="true">
+                                    <i class="bi bi-people-fill text-primary"></i>
+                                    <span class="tab-label">Tim & Jobdesk</span>
+                                    <span class="tab-badge">{{ $p->members->count() + 1 }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-doc-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-doc-{{ $p->id }}" type="button" role="tab" aria-controls="pane-doc-{{ $p->id }}" aria-selected="false">
+                                    <i class="bi bi-layers-fill text-warning"></i>
+                                    <span class="tab-label">Riwayat Versi</span>
+                                    <span class="tab-badge">v{{ $p->documents->count() }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-review-{{ $p->id }}" data-bs-toggle="tab" data-bs-target="#pane-review-{{ $p->id }}" type="button" role="tab" aria-controls="pane-review-{{ $p->id }}" aria-selected="false">
+                                    <i class="bi bi-chat-left-dots-fill text-info"></i>
+                                    <span class="tab-label">Catatan Evaluasi</span>
+                                    <span class="tab-badge">{{ $p->reviews->count() }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
 
                     <div class="tab-content" id="modalTabContent-{{ $p->id }}">
                         <!-- Tab 1: Susunan Tim Pelaksana & Jobdesk -->
