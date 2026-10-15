@@ -63,7 +63,7 @@
             </select>
         </div>
 
-        <a href="{{ asset('storage/' . ($proposal->documents->first()?->file_path ?? $proposal->file_path)) }}" id="btnOpenNewTab" target="_blank" class="btn btn-outline-primary btn-sm">
+        <a href="{{ route('proposals.file', $proposal) }}" id="btnOpenNewTab" target="_blank" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-box-arrow-up-right"></i> Buka PDF Tab Baru
         </a>
     </div>
@@ -83,11 +83,11 @@
                     <label for="selectPdfVersion" class="small text-secondary mb-0 fw-semibold">Pilih Versi:</label>
                     <select id="selectPdfVersion" class="form-select form-select-sm py-0" style="width: auto; font-size: 0.82rem;">
                         @forelse($proposal->documents as $doc)
-                            <option value="{{ asset('storage/' . $doc->file_path) }}" {{ $loop->first ? 'selected' : '' }}>
+                            <option value="{{ route('proposals.documents.show', [$proposal, $doc]) }}" {{ $loop->first ? 'selected' : '' }}>
                                 Versi {{ $doc->version }} {{ $loop->first ? '(Terbaru)' : '' }} - {{ $doc->created_at->format('d M, H:i') }}
                             </option>
                         @empty
-                            <option value="{{ asset('storage/' . $proposal->file_path) }}">Versi 1 (Naskah Awal)</option>
+                            <option value="{{ route('proposals.file', $proposal) }}">Versi 1 (Naskah Awal)</option>
                         @endforelse
                     </select>
                 </div>
@@ -97,7 +97,7 @@
             <div class="flex-grow-1 position-relative">
                 <iframe 
                     id="mainPdfIframe"
-                    src="{{ asset('storage/' . ($proposal->documents->first()?->file_path ?? $proposal->file_path)) }}#toolbar=1&navpanes=0" 
+                    src="{{ route('proposals.file', $proposal) }}#toolbar=1&navpanes=0" 
                     class="pdf-frame border-0 w-100 h-100 position-absolute top-0 start-0" 
                     title="Dokumen Proposal PDF">
                     Browser Anda tidak mendukung iframe PDF. Silakan gunakan tombol buka tab baru.

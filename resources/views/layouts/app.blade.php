@@ -70,7 +70,7 @@
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.mahasiswa.*') || request()->routeIs('admin.dosen.*') ? 'active fw-bold' : '' }}" href="#" id="adminSettingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('admin.mahasiswa.*') || request()->routeIs('admin.dosen.*') || request()->routeIs('admin.administrators.*') ? 'active fw-bold' : '' }}" href="#" id="adminSettingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-gear-fill"></i> Setting
                                 </a>
                                 <ul class="dropdown-menu shadow-sm" aria-labelledby="adminSettingDropdown">
@@ -95,6 +95,18 @@
                                     <li>
                                         <a class="dropdown-item {{ request()->routeIs('admin.dosen.index') ? 'active' : '' }}" href="{{ route('admin.dosen.index') }}">
                                             <i class="bi bi-person-badge-fill text-success me-2"></i> Data Dosen Pembimbing
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-header text-uppercase small fw-bold text-muted" style="font-size: 0.72rem;">Kelola Administrator</li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.administrators.create') ? 'active' : '' }}" href="{{ route('admin.administrators.create') }}">
+                                            <i class="bi bi-shield-plus text-danger me-2"></i> Add Admin
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request()->routeIs('admin.administrators.index') ? 'active' : '' }}" href="{{ route('admin.administrators.index') }}">
+                                            <i class="bi bi-shield-lock-fill text-danger me-2"></i> Data Admin Terdaftar
                                         </a>
                                     </li>
                                 </ul>

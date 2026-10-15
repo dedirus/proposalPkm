@@ -1,0 +1,18 @@
+{
+  "project_name": "Proposal_UKM_Agent",
+  "agents": [
+    {
+      "name": "explorer-agent",
+      "path": ".agents/skills/1-explorer-agent",
+      "model": "gemini-3.8-flash-high",
+      "temperature": 0.2
+    },
+    {
+      "name": "coder-agent",
+      "path": ".agents/skills/2-coder-agent",
+      "model": "gemini-3.8-flash-high",
+      "temperature": 0.5
+    }
+  ]
+}
+

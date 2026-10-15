@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Proposal;
-use App\Models\ProposalMember;
 use App\Models\ProposalReview;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,8 +15,11 @@ class ProposalPkmWorkflowTest extends TestCase
     use RefreshDatabase;
 
     protected User $mahasiswa;
+
     protected User $dosen1;
+
     protected User $dosen2;
+
     protected User $admin;
 
     protected function setUp(): void
@@ -26,38 +28,38 @@ class ProposalPkmWorkflowTest extends TestCase
 
         // Siapkan akun pengujian
         $this->mahasiswa = User::create([
-            'name'     => 'Budi Santoso',
-            'email'    => 'budi@test.com',
-            'role'     => 'mahasiswa',
-            'nip_nim'  => '2108101001',
+            'name' => 'Budi Santoso',
+            'email' => 'budi@test.com',
+            'role' => 'mahasiswa',
+            'nip_nim' => '2108101001',
             'password' => bcrypt('password'),
         ]);
 
         $this->dosen1 = User::create([
-            'name'      => 'Dr. Hendra Wijaya',
-            'email'     => 'hendra@test.com',
-            'role'      => 'dosen',
-            'nip_nim'   => '198501012010121001',
+            'name' => 'Dr. Hendra Wijaya',
+            'email' => 'hendra@test.com',
+            'role' => 'dosen',
+            'nip_nim' => '198501012010121001',
             'kepakaran' => 'Artificial Intelligence & IoT',
-            'password'  => bcrypt('password'),
+            'password' => bcrypt('password'),
         ]);
 
         $this->dosen2 = User::create([
-            'name'      => 'Prof. Siti Rahmawati',
-            'email'     => 'siti@test.com',
-            'role'      => 'dosen',
-            'nip_nim'   => '198702022012122002',
+            'name' => 'Prof. Siti Rahmawati',
+            'email' => 'siti@test.com',
+            'role' => 'dosen',
+            'nip_nim' => '198702022012122002',
             'kepakaran' => 'Kewirausahaan & Bisnis Digital',
-            'password'  => bcrypt('password'),
+            'password' => bcrypt('password'),
         ]);
 
         $this->admin = User::create([
-            'name'      => 'Administrator PKM',
-            'email'     => 'admin@test.com',
-            'role'      => 'admin',
-            'nip_nim'   => '198001012005011001',
+            'name' => 'Administrator PKM',
+            'email' => 'admin@test.com',
+            'role' => 'admin',
+            'nip_nim' => '198001012005011001',
             'kepakaran' => 'Manajemen PKM',
-            'password'  => bcrypt('password'),
+            'password' => bcrypt('password'),
         ]);
     }
 
@@ -66,26 +68,27 @@ class ProposalPkmWorkflowTest extends TestCase
      */
     public function test_mahasiswa_can_upload_proposal_and_bulk_insert_members(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
 
         $file = UploadedFile::fake()->create('proposal_pkm.pdf', 500, 'application/pdf');
 
         $payload = [
-            'judul_pkm'     => 'Implementasi IoT untuk Smart Farming',
-            'skema_pkm'     => 'PKM-KC (Karsa Cipta)',
+            'judul_pkm' => 'Implementasi IoT untuk Smart Farming',
+            'skema_pkm' => 'PKM-KC (Karsa Cipta)',
             'proposal_file' => $file,
-            'members'       => [
+            'members' => [
                 [
                     'nama_anggota' => 'Ahmad Fauzi',
-                    'nim_anggota'  => '2108101002',
+                    'nim_anggota' => '2108101002',
                     'role_anggota' => 'Anggota 1',
-                    'jobdesk'      => 'Merancang sensor tanah dan NodeMCU.',
+                    'jobdesk' => 'Merancang sensor tanah dan NodeMCU.',
                 ],
                 [
                     'nama_anggota' => 'Dewi Anggraini',
-                    'nim_anggota'  => '2108101003',
+                    'nim_anggota' => '2108101003',
                     'role_anggota' => 'Anggota 2',
-                    'jobdesk'      => 'Membangun dashboard web pemantauan.',
+                    'jobdesk' => 'Membangun dashboard web pemantauan.',
                 ],
             ],
         ];
@@ -98,17 +101,17 @@ class ProposalPkmWorkflowTest extends TestCase
 
         // Pastikan proposal tersimpan di database
         $this->assertDatabaseHas('proposals', [
-            'ketua_id'  => $this->mahasiswa->id,
+            'ketua_id' => $this->mahasiswa->id,
             'judul_pkm' => 'Implementasi IoT untuk Smart Farming',
-            'dosen_id'  => null,
-            'status'    => 'diajukan',
+            'dosen_id' => null,
+            'status' => 'diajukan',
         ]);
 
         // Pastikan kedua anggota tim berhasil di-bulk insert
         $this->assertDatabaseCount('proposal_members', 2);
         $this->assertDatabaseHas('proposal_members', [
             'nama_anggota' => 'Ahmad Fauzi',
-            'nim_anggota'  => '2108101002',
+            'nim_anggota' => '2108101002',
         ]);
     }
 
@@ -118,12 +121,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dashboard_shows_mencari_pembimbing_when_dosen_id_is_null(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => null,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => null,
             'judul_pkm' => 'Prototipe Kursi Roda Otomatis',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/dummy.pdf',
-            'status'    => 'diajukan',
+            'status' => 'diajukan',
         ]);
 
         $this->assertEquals('Mencari Pembimbing', $proposal->status_pembimbing);
@@ -141,12 +144,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_view_available_proposals(): void
     {
         Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => null,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => null,
             'judul_pkm' => 'Pengembangan Aplikasi Deteksi Dini Stunting',
             'skema_pkm' => 'PKM-PM',
             'file_path' => 'proposals/stunting.pdf',
-            'status'    => 'diajukan',
+            'status' => 'diajukan',
         ]);
 
         $response = $this->actingAs($this->dosen1)
@@ -162,12 +165,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_claim_proposal(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => null,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => null,
             'judul_pkm' => 'Pengembangan Aplikasi Deteksi Dini Stunting',
             'skema_pkm' => 'PKM-PM',
             'file_path' => 'proposals/stunting.pdf',
-            'status'    => 'diajukan',
+            'status' => 'diajukan',
         ]);
 
         $response = $this->actingAs($this->dosen1)
@@ -187,12 +190,12 @@ class ProposalPkmWorkflowTest extends TestCase
     {
         // Proposal sudah diklaim oleh dosen 1
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Pengembangan Drone Pemadam Kebakaran',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/drone.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         // Dosen 2 mencoba mengklaim proposal yang sama
@@ -213,17 +216,17 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_store_review_comment(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Pengembangan Drone Pemadam Kebakaran',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/drone.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $payload = [
-            'halaman'        => 5,
-            'status_bagian'  => 'perlu_perbaikan',
+            'halaman' => 5,
+            'status_bagian' => 'perlu_perbaikan',
             'catatan_review' => 'Perbaiki perincian biaya anggaran motor brushless.',
         ];
 
@@ -233,18 +236,18 @@ class ProposalPkmWorkflowTest extends TestCase
         $response->assertStatus(201);
         $response->assertJson([
             'success' => true,
-            'data'    => [
-                'halaman'        => 5,
-                'status_bagian'  => 'perlu_perbaikan',
+            'data' => [
+                'halaman' => 5,
+                'status_bagian' => 'perlu_perbaikan',
                 'catatan_review' => 'Perbaiki perincian biaya anggaran motor brushless.',
             ],
         ]);
 
         $this->assertDatabaseHas('proposal_reviews', [
-            'proposal_id'    => $proposal->id,
-            'dosen_id'       => $this->dosen1->id,
-            'halaman'        => 5,
-            'status_bagian'  => 'perlu_perbaikan',
+            'proposal_id' => $proposal->id,
+            'dosen_id' => $this->dosen1->id,
+            'halaman' => 5,
+            'status_bagian' => 'perlu_perbaikan',
         ]);
     }
 
@@ -254,12 +257,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dashboard_shows_dosen_name_after_claimed(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem AI Pemilah Sampah Organik',
             'skema_pkm' => 'PKM-RE',
             'file_path' => 'proposals/sampah.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $this->assertEquals('Sudah Ada Pembimbing: Dr. Hendra Wijaya', $proposal->status_pembimbing);
@@ -277,25 +280,25 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_update_review_comment(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem Deteksi Hama',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/hama.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $review = ProposalReview::create([
-            'proposal_id'    => $proposal->id,
-            'dosen_id'       => $this->dosen1->id,
-            'halaman'        => 3,
-            'status_bagian'  => 'perlu_perbaikan',
+            'proposal_id' => $proposal->id,
+            'dosen_id' => $this->dosen1->id,
+            'halaman' => 3,
+            'status_bagian' => 'perlu_perbaikan',
             'catatan_review' => 'Catatan awal sebelum diedit',
         ]);
 
         $payload = [
-            'halaman'        => 4,
-            'status_bagian'  => 'oke',
+            'halaman' => 4,
+            'status_bagian' => 'oke',
             'catatan_review' => 'Catatan telah diperbaiki dan diperbarui oleh dosen.',
         ];
 
@@ -305,18 +308,18 @@ class ProposalPkmWorkflowTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
-            'data'    => [
-                'id'             => $review->id,
-                'halaman'        => 4,
-                'status_bagian'  => 'oke',
+            'data' => [
+                'id' => $review->id,
+                'halaman' => 4,
+                'status_bagian' => 'oke',
                 'catatan_review' => 'Catatan telah diperbaiki dan diperbarui oleh dosen.',
             ],
         ]);
 
         $this->assertDatabaseHas('proposal_reviews', [
-            'id'             => $review->id,
-            'halaman'        => 4,
-            'status_bagian'  => 'oke',
+            'id' => $review->id,
+            'halaman' => 4,
+            'status_bagian' => 'oke',
             'catatan_review' => 'Catatan telah diperbaiki dan diperbarui oleh dosen.',
         ]);
     }
@@ -327,19 +330,19 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_delete_review_comment(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem Deteksi Hama',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/hama.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $review = ProposalReview::create([
-            'proposal_id'    => $proposal->id,
-            'dosen_id'       => $this->dosen1->id,
-            'halaman'        => 3,
-            'status_bagian'  => 'perlu_perbaikan',
+            'proposal_id' => $proposal->id,
+            'dosen_id' => $this->dosen1->id,
+            'halaman' => 3,
+            'status_bagian' => 'perlu_perbaikan',
             'catatan_review' => 'Catatan yang akan dihapus',
         ]);
 
@@ -348,7 +351,7 @@ class ProposalPkmWorkflowTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'success'   => true,
+            'success' => true,
             'review_id' => $review->id,
         ]);
 
@@ -363,27 +366,27 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_cannot_modify_other_dosen_review(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem Deteksi Hama',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/hama.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $review = ProposalReview::create([
-            'proposal_id'    => $proposal->id,
-            'dosen_id'       => $this->dosen1->id,
-            'halaman'        => 3,
-            'status_bagian'  => 'perlu_perbaikan',
+            'proposal_id' => $proposal->id,
+            'dosen_id' => $this->dosen1->id,
+            'halaman' => 3,
+            'status_bagian' => 'perlu_perbaikan',
             'catatan_review' => 'Catatan milik dosen 1',
         ]);
 
         // Dosen 2 mencoba update
         $responseEdit = $this->actingAs($this->dosen2)
             ->putJson(route('dosen.reviews.update', $review->id), [
-                'halaman'        => 1,
-                'status_bagian'  => 'oke',
+                'halaman' => 1,
+                'status_bagian' => 'oke',
                 'catatan_review' => 'Mencoba merubah catatan dosen 1',
             ]);
         $responseEdit->assertStatus(403);
@@ -400,21 +403,21 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_mahasiswa_can_toggle_resolve_status(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem Deteksi Hama',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/hama.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $review = ProposalReview::create([
-            'proposal_id'    => $proposal->id,
-            'dosen_id'       => $this->dosen1->id,
-            'halaman'        => 3,
-            'status_bagian'  => 'perlu_perbaikan',
+            'proposal_id' => $proposal->id,
+            'dosen_id' => $this->dosen1->id,
+            'halaman' => 3,
+            'status_bagian' => 'perlu_perbaikan',
             'catatan_review' => 'Perbaiki latar belakang masalah.',
-            'is_resolved'    => false,
+            'is_resolved' => false,
         ]);
 
         // Toggle pertama: menjadi true (selesai diperbaiki)
@@ -423,7 +426,7 @@ class ProposalPkmWorkflowTest extends TestCase
 
         $response1->assertStatus(200);
         $response1->assertJson([
-            'success'     => true,
+            'success' => true,
             'is_resolved' => true,
         ]);
 
@@ -436,7 +439,7 @@ class ProposalPkmWorkflowTest extends TestCase
 
         $response2->assertStatus(200);
         $response2->assertJson([
-            'success'     => true,
+            'success' => true,
             'is_resolved' => false,
         ]);
 
@@ -449,20 +452,21 @@ class ProposalPkmWorkflowTest extends TestCase
      */
     public function test_mahasiswa_can_upload_new_revision_version(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
 
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Inovasi Robot Pelayan',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/robot_v1.pdf',
-            'status'    => 'revisi',
+            'status' => 'revisi',
         ]);
 
         $proposal->documents()->create([
-            'version'        => 1,
-            'file_path'      => 'proposals/robot_v1.pdf',
+            'version' => 1,
+            'file_path' => 'proposals/robot_v1.pdf',
             'catatan_revisi' => 'Versi awal pengajuan.',
         ]);
 
@@ -470,7 +474,7 @@ class ProposalPkmWorkflowTest extends TestCase
 
         $response = $this->actingAs($this->mahasiswa)
             ->post(route('mahasiswa.proposal.revision', $proposal->id), [
-                'revision_file'  => $fileRev,
+                'revision_file' => $fileRev,
                 'catatan_revisi' => 'Perbaikan metode kontrol motor servo.',
             ]);
 
@@ -483,8 +487,8 @@ class ProposalPkmWorkflowTest extends TestCase
         // Verifikasi tabel proposal_documents mencatat versi 2
         $this->assertDatabaseCount('proposal_documents', 2);
         $this->assertDatabaseHas('proposal_documents', [
-            'proposal_id'    => $proposal->id,
-            'version'        => 2,
+            'proposal_id' => $proposal->id,
+            'version' => 2,
             'catatan_revisi' => 'Perbaikan metode kontrol motor servo.',
         ]);
     }
@@ -495,12 +499,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_dosen_can_change_proposal_status(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Inovasi Robot Pelayan',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/robot.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         // Ubah ke revisi
@@ -511,7 +515,7 @@ class ProposalPkmWorkflowTest extends TestCase
         $resRevisi->assertStatus(200);
         $resRevisi->assertJson([
             'success' => true,
-            'status'  => 'revisi',
+            'status' => 'revisi',
         ]);
 
         $proposal->refresh();
@@ -525,7 +529,7 @@ class ProposalPkmWorkflowTest extends TestCase
         $resSelesai->assertStatus(200);
         $resSelesai->assertJson([
             'success' => true,
-            'status'  => 'selesai',
+            'status' => 'selesai',
         ]);
 
         $proposal->refresh();
@@ -538,12 +542,12 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_unauthorized_dosen_cannot_change_proposal_status(): void
     {
         $proposal = Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Inovasi Robot Pelayan',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/robot.pdf',
-            'status'    => 'sedang_dibimbing',
+            'status' => 'sedang_dibimbing',
         ]);
 
         $response = $this->actingAs($this->dosen2)
@@ -564,22 +568,22 @@ class ProposalPkmWorkflowTest extends TestCase
     {
         // Proposal 1: Mencari Pembimbing
         Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => null,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => null,
             'judul_pkm' => 'Sistem IoT 1',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/p1.pdf',
-            'status'    => 'diajukan',
+            'status' => 'diajukan',
         ]);
 
         // Proposal 2: Selesai
         Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Sistem AI 2',
             'skema_pkm' => 'PKM-RE',
             'file_path' => 'proposals/p2.pdf',
-            'status'    => 'selesai',
+            'status' => 'selesai',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -597,21 +601,21 @@ class ProposalPkmWorkflowTest extends TestCase
     public function test_admin_can_filter_proposals_by_status(): void
     {
         Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => null,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => null,
             'judul_pkm' => 'Usulan Belum Selesai',
             'skema_pkm' => 'PKM-KC',
             'file_path' => 'proposals/p1.pdf',
-            'status'    => 'diajukan',
+            'status' => 'diajukan',
         ]);
 
         Proposal::create([
-            'ketua_id'  => $this->mahasiswa->id,
-            'dosen_id'  => $this->dosen1->id,
+            'ketua_id' => $this->mahasiswa->id,
+            'dosen_id' => $this->dosen1->id,
             'judul_pkm' => 'Usulan Sudah Selesai Final',
             'skema_pkm' => 'PKM-RE',
             'file_path' => 'proposals/p2.pdf',
-            'status'    => 'selesai',
+            'status' => 'selesai',
         ]);
 
         $response = $this->actingAs($this->admin)

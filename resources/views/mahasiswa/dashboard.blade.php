@@ -87,7 +87,7 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
-                        <a href="{{ asset('storage/' . $proposal->file_path) }}" target="_blank" class="btn btn-outline-primary">
+                        <a href="{{ route('proposals.file', $proposal) }}" target="_blank" class="btn btn-outline-primary">
                             <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> Lihat Dokumen PDF (v{{ $proposal->documents->first()?->version ?? 1 }})
                         </a>
                         @if($proposal->status !== 'selesai' && !is_null($proposal->dosen_id))
@@ -162,7 +162,7 @@
                                             <td><small class="text-dark">{{ $doc->catatan_revisi ?: '-' }}</small></td>
                                             <td><small class="text-muted">{{ $doc->created_at->format('d M Y, H:i') }} WIB</small></td>
                                             <td class="text-end pe-3">
-                                                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-xs">
+                                                <a href="{{ route('proposals.documents.show', [$proposal, $doc]) }}" target="_blank" class="btn btn-outline-primary btn-xs">
                                                     <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> Buka PDF
                                                 </a>
                                             </td>
@@ -170,7 +170,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="4" class="text-center py-2 text-muted small">
-                                                <a href="{{ asset('storage/' . $proposal->file_path) }}" target="_blank">Buka Naskah Utama</a>
+                                                <a href="{{ route('proposals.file', $proposal) }}" target="_blank">Buka Naskah Utama</a>
                                             </td>
                                         </tr>
                                     @endforelse

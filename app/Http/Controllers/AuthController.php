@@ -26,7 +26,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -46,12 +46,16 @@ class AuthController extends Controller
      */
     public function quickLogin(string $role)
     {
+        if (app()->isProduction()) {
+            abort(404);
+        }
+
         $user = match ($role) {
             'mahasiswa' => User::where('role', 'mahasiswa')->first(),
-            'dosen1'    => User::where('email', 'dosen1@example.com')->first(),
-            'dosen2'    => User::where('email', 'dosen2@example.com')->first(),
-            'admin'     => User::where('role', 'admin')->first(),
-            default     => null,
+            'dosen1' => User::where('email', 'dosen1@example.com')->first(),
+            'dosen2' => User::where('email', 'dosen2@example.com')->first(),
+            'admin' => User::where('role', 'admin')->first(),
+            default => null,
         };
 
         if ($user) {

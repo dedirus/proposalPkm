@@ -62,7 +62,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="{{ asset('storage/' . $prop->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Pratinjau PDF">
+                                    <a href="{{ route('proposals.file', $prop) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Pratinjau PDF">
                                         <i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF
                                     </a>
                                 </td>

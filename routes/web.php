@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AdminAdministratorController;
 use App\Http\Controllers\AdminDosenController;
 use App\Http\Controllers\AdminMahasiswaController;
 use App\Http\Controllers\AdminProposalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DosenProposalController;
 use App\Http\Controllers\MahasiswaProposalController;
+use App\Http\Controllers\ProposalDocumentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +36,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::middleware(['auth'])->group(function () {
 
     // ==========================================
+    // AKSES DOKUMEN PROPOSAL TERPROTEKSI
+    // ==========================================
+    Route::get('/proposals/{proposal}/file', [ProposalDocumentController::class, 'showMainDocument'])->name('proposals.file');
+    Route::get('/proposals/{proposal}/documents/{document}', [ProposalDocumentController::class, 'showVersionDocument'])->name('proposals.documents.show');
+
+    // ==========================================
     // AREA MAHASISWA (KETUA TIM)
     // ==========================================
     Route::middleware(['role:mahasiswa'])
@@ -43,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dashboard', [MahasiswaProposalController::class, 'dashboardMahasiswa'])->name('dashboard');
             Route::get('/proposal/create', [MahasiswaProposalController::class, 'createProposal'])->name('proposal.create');
             Route::post('/proposal/store', [MahasiswaProposalController::class, 'storeProposal'])->name('proposal.store');
-            
+
             // Unggah berkas revisi proposal mahasiswa
             Route::post('/proposal/{proposal}/revision', [MahasiswaProposalController::class, 'uploadRevision'])->name('proposal.revision');
 
@@ -60,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
             // Daftar proposal yang mencari pembimbing
             Route::get('/proposals/available', [DosenProposalController::class, 'listAvailableProposals'])->name('proposals.available');
-            
+
             // Aksi claim proposal (Race condition safe)
             Route::post('/proposals/{proposal}/claim', [DosenProposalController::class, 'claimProposal'])->name('proposals.claim');
 
@@ -72,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
 
             // Kontrol status proposal (sedang_dibimbing, revisi, selesai)
             Route::patch('/bimbingan/{proposal}/status', [DosenProposalController::class, 'updateStatus'])->name('bimbingan.status.update');
-            
+
             // Endpoint AJAX untuk catatan review (tambah, edit, hapus tanpa reload PDF)
             Route::post('/bimbingan/{proposal}/review', [DosenProposalController::class, 'storeReviewComment'])->name('bimbingan.review.store');
             Route::put('/reviews/{review}', [DosenProposalController::class, 'updateReviewComment'])->name('reviews.update');
@@ -105,5 +113,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dosen/{user}/edit', [AdminDosenController::class, 'edit'])->name('dosen.edit');
             Route::put('/dosen/{user}', [AdminDosenController::class, 'update'])->name('dosen.update');
             Route::delete('/dosen/{user}', [AdminDosenController::class, 'destroy'])->name('dosen.destroy');
+
+            // Manajemen & Registrasi Administrator (Setting -> Add Admin)
+            Route::get('/administrators', [AdminAdministratorController::class, 'index'])->name('administrators.index');
+            Route::get('/administrators/create', [AdminAdministratorController::class, 'create'])->name('administrators.create');
+            Route::post('/administrators', [AdminAdministratorController::class, 'store'])->name('administrators.store');
+            Route::get('/administrators/{user}/edit', [AdminAdministratorController::class, 'edit'])->name('administrators.edit');
+            Route::put('/administrators/{user}', [AdminAdministratorController::class, 'update'])->name('administrators.update');
+            Route::delete('/administrators/{user}', [AdminAdministratorController::class, 'destroy'])->name('administrators.destroy');
         });
 });

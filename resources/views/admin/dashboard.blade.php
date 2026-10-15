@@ -350,7 +350,7 @@
                                 </td>
                                 <td class="text-end pe-3">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ asset('storage/' . $p->file_path) }}" target="_blank" class="btn btn-outline-secondary" title="Buka Dokumen PDF Terkini">
+                                        <a href="{{ route('proposals.file', $p) }}" target="_blank" class="btn btn-outline-secondary" title="Buka Dokumen PDF Terkini">
                                             <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
                                         </a>
                                         <button type="button" class="btn btn-outline-primary btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetail-{{ $p->id }}" title="Lihat Detail Lengkap">
@@ -474,7 +474,7 @@
                                                 <td>{{ $doc->catatan_revisi ?: '-' }}</td>
                                                 <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
                                                 <td class="text-center">
-                                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                                                    <a href="{{ route('proposals.documents.show', [$p, $doc]) }}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.75rem;">
                                                         <i class="bi bi-download"></i> Buka PDF
                                                     </a>
                                                 </td>
